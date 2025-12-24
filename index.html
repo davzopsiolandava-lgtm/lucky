@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DHAFIZ777-GACHA VIP</title>
+<title>DHAFIZ777-GACHA PREMIUM</title>
 <style>
 body{margin:0;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:Arial,sans-serif;color:#fff;background:radial-gradient(circle at top,#1b0033,#000);overflow:hidden;}
 h1{margin-bottom:6px;font-size:38px;text-shadow:0 0 25px #00ffe0;} 
@@ -27,37 +27,34 @@ button:hover{filter:brightness(1.2);}
 .popup.show .popupBox{transform:scale(1);}
 .popupText{font-size:32px;font-weight:bold;margin-bottom:20px;text-shadow:0 0 15px #00ffe0;}
 input{margin-top:12px;padding:12px;width:100%;border-radius:14px;border:none;outline:none;font-size:16px;background:#111;color:#fff;text-align:center;}
-#submitLogin{margin-top:18px;background:#00ffe0;color:#000;width:50%;font-weight:bold;font-size:16px;}
+#submitName{margin-top:18px;background:#00ffe0;color:#000;width:50%;font-weight:bold;font-size:16px;}
 #toast{position:fixed;bottom:20px;background:#111;padding:10px 18px;border-radius:20px;opacity:0;transition:.3s;}
+#premiumTimer,#boostTimer,#potionCountdown{margin-top:6px;font-size:14px;color:#00ffe0;text-shadow:0 0 12px #00ffe0;}
 .secretSpecial {color:#1de9b6;text-shadow:0 0 10px #1de9b6,0 0 20px #1de9b6,0 0 30px #00ffdd;animation:secretPulse 1s infinite alternate;}
 .mythicSpecial {color:#ff5252;text-shadow:0 0 15px #ff5252,0 0 25px #ff0000;animation:secretPulse 1s infinite alternate;}
 @keyframes secretPulse{0%{transform:scale(1);}50%{transform:scale(1.3) rotate(10deg);}100%{transform:scale(1.2) rotate(-10deg);}}
 </style>
 </head>
 <body>
-<h1>🎁 DHAFIZ777-GACHA VIP</h1>
+<h1>🎁 DHAFIZ777-GACHA</h1>
 <div id="limitText"></div>
+<div id="premiumTimer"></div>
+<div id="boostTimer"></div>
+<div id="potionCountdown"></div>
 <div id="gift" onclick="prepareGift()">🎁</div>
-
 <div class="controls">
- <button id="adminBtn" class="admin" onclick="activateAdminAbuse()">ADMIN ABUSE ❌</button>
- <button class="admin" onclick="showVipPasswordManager()">Kelola Password VIP</button>
-</div>
-
-<div class="controls">
-  <input id="giftAmount" type="number" placeholder="Jumlah spin kado" style="width:120px;margin-right:5px;">
-  <button class="admin" onclick="addGiftsToAll()">Tambah Kado Semua</button>
+ <button id="adminBtn" class="admin" onclick="toggleAdmin()">ADMIN ABUSE ❌</button>
 </div>
 
 <div id="popup" class="popup">
  <div class="popupBox">
   <div class="popupText" id="popupText">Harap Masukan Nama Discord Anda</div>
   <input id="usernameInput" placeholder="Nama Discord">
-  <button id="submitLogin" onclick="createOrLoginUser()">SUBMIT</button>
+  <button id="submitName" onclick="submitUsername()">SUBMIT</button>
  </div>
 </div>
 
-<div id="modeSelect" style="display:none">
+<div id="modeSelect">
  <div class="popupBox" style="text-align:center;">
   <h2>PROTECTION</h2>
   <div style="font-size:14px;color:#00ffcc;margin-bottom:15px;">SECURE GACHA SYSTEM</div>
@@ -69,27 +66,32 @@ input{margin-top:12px;padding:12px;width:100%;border-radius:14px;border:none;out
  </div>
 </div>
 
-<div id="vipPopup" class="popup">
-  <div class="popupBox">
-    <div class="popupText">Tambah / Lihat Password VIP</div>
-    <input id="newVipPassword" placeholder="Masukkan password VIP baru">
-    <button onclick="addVipPassword()">Tambah Password</button>
-    <div id="vipList" style="margin-top:15px;max-height:200px;overflow-y:auto;color:#00ffe0;"></div>
-    <button onclick="vipPopupClose()">Tutup</button>
-  </div>
+<div class="controls">
+ <button id="boostBtn" class="modePremium" onclick="startPotionAdmin()">🧪 POTION ADMIN</button>
+</div>
+
+<div class="controls" style="margin-top:15px;">
+  <input id="vipPasswordInput" placeholder="Tambah Password VIP">
+  <button onclick="addVipPassword()">➕ ADD VIP PASSWORD</button>
+  <br><br>
+  <input id="giftUsername" placeholder="Tambah Kado User">
+  <button onclick="addGift()">➕ ADD GIFT</button>
 </div>
 
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script>
-window.supabaseClient = window.supabaseClient || supabase.createClient(
-  "https://gacha-xyz.supabase.co",
-  "sb_publishable_rBYeUnQhRrkGCM9OPq3jSA_nPL_zX5q"
-);
-const supabase = window.supabaseClient;
+if(!window.supabaseClient){
+  window.supabaseClient=supabase.createClient(
+    "https://gacha-xyz.supabase.co",
+    "sb_publishable_rBYeUnQhRrkGCM9OPq3jSA_nPL_zX5q"
+  );
+}
+var supabase=window.supabaseClient;
 
 const WEBHOOK="https://discord.com/api/webhooks/1450407026332270714/YUCosS--Bjud-m8oX_j84L8R44fGXHB_LHnf_0qAT48Pa99J_xbKDuDSwI83kLUlauit";
+
 const gift=document.getElementById("gift");
 const popup=document.getElementById("popup");
 const popupText=document.getElementById("popupText");
@@ -97,61 +99,46 @@ const usernameInput=document.getElementById("usernameInput");
 const toastEl=document.getElementById("toast");
 const limitText=document.getElementById("limitText");
 const adminBtn=document.getElementById("adminBtn");
+const premiumTimer=document.getElementById("premiumTimer");
+const boostTimer=document.getElementById("boostTimer");
+const potionCountdown=document.getElementById("potionCountdown");
 const modeSelect=document.getElementById("modeSelect");
 const premiumKey=document.getElementById("premiumKey");
-const vipPopup=document.getElementById("vipPopup");
-const vipList=document.getElementById("vipList");
-const newVipPassword=document.getElementById("newVipPassword");
+const boostBtn=document.getElementById("boostBtn");
+const vipPasswordInput=document.getElementById("vipPasswordInput");
+const giftUsername=document.getElementById("giftUsername");
 
 let username=sessionStorage.getItem("username")||"";
 let mode=null,gachaLimit=0,adminAbuse=false,opening=false,lastSpin=0;
-let deviceId = localStorage.getItem("device_id");
-if(!deviceId){deviceId = crypto.randomUUID(); localStorage.setItem("device_id", deviceId);}
+let potionActive=false,potionExpire=0;
+let deviceId=localStorage.getItem("device_id");
+if(!deviceId){deviceId=crypto.randomUUID(); localStorage.setItem("device_id", deviceId);}
 
 const rateFree=[{n:"ZONK ⚫",c:"zonk",p:50},{n:"RARE 🔵",c:"rare",p:30},{n:"EPIC 🟣",c:"epic",p:15},{n:"LEGENDARY 🟡",c:"legendary",p:4},{n:"MYTHIC 🔴",c:"mythic",p:0.5},{n:"SECRET 🟢",c:"secret",p:0.5}];
 const ratePremium=[{n:"ZONK ⚫",c:"zonk",p:40},{n:"RARE 🔵",c:"rare",p:30},{n:"EPIC 🟣",c:"epic",p:15},{n:"LEGENDARY 🟡",c:"legendary",p:10},{n:"MYTHIC 🔴",c:"mythic",p:3},{n:"SECRET 🟢",c:"secret",p:2}];
 const rateAdmin=[{n:"ZONK ⚫",c:"zonk",p:20},{n:"RARE 🔵",c:"rare",p:20},{n:"EPIC 🟣",c:"epic",p:20},{n:"LEGENDARY 🟡",c:"legendary",p:15},{n:"MYTHIC 🔴",c:"mythic",p:10},{n:"SECRET 🟢",c:"secret",p:15}];
 
 function toast(msg){toastEl.textContent=msg;toastEl.style.opacity=1;setTimeout(()=>toastEl.style.opacity=0,1500);}
+function submitUsername(){let u=usernameInput.value.trim();if(!u)return toast("Masukkan nama dulu!");username=u; sessionStorage.setItem("username",username);popup.classList.remove("show");toast("Nama Discord tersimpan: "+username);}
 function prepareGift(){if(!username){popup.classList.add("show");return;} openGift();}
-async function createOrLoginUser(){
-    const uname=usernameInput.value.trim();
-    if(!uname) return toast("Masukkan nama Discord!");
-    const {data,error}=await supabase.from('gacha_users').select('*').eq('device_id',deviceId).single();
-    if(error || !data){
-        await supabase.from('gacha_users').insert({device_id:deviceId, username:uname, spins_free:3, spins_premium:0, created_at:new Date()});
-        toast("Akun berhasil dibuat!");
-    } else {
-        if(data.username!==uname) return toast("Username salah!");
-        toast("Login berhasil!");
-    }
-    username=uname;
-    sessionStorage.setItem("username",username);
-    popup.classList.remove("show");
-    modeSelect.style.display="flex";
+function roll(){let table=mode==="FREE"?rateFree:mode==="PREMIUM"?ratePremium:rateFree;if(adminAbuse) table=rateAdmin;if(potionActive){table=table.map(i=>i.c==="secret"||i.c==="mythic"?{...i,p:i.p*3}:i);let total=table.reduce((a,b)=>a+b.p,0);table=table.map(i=>({...i,p:(i.p/total)*100}));}let r=Math.random()*100,t=0;for(let i of table){t+=i.p;if(r<=t) return i;}
 }
-
-function roll(){let table=mode==="FREE"?rateFree:ratePremium;if(adminAbuse) table=rateAdmin;let r=Math.random()*100,t=0;for(let i of table){t+=i.p;if(r<=t) return i;}}
-
-async function openGift(){if(opening||gachaLimit<=0) return toast("Gacha habis");if(Date.now()-lastSpin<1200) return;lastSpin=Date.now();if(gachaLimit!==Infinity) gachaLimit--;update();gift.classList.add("shake");setTimeout(async()=>{gift.classList.remove("shake");const p=roll();popupText.className=p.n==="SECRET 🟢"?"popupText secretSpecial":p.n==="MYTHIC 🔴"?"popupText mythicSpecial":"popupText "+p.c;popupText.textContent=p.n;popup.classList.add("show");opening=false;sendDiscord(p.n,mode);},1300);}
-
-function activateAdminAbuse(){const key=prompt("Masukkan key Admin Abuse");if(key!=="davzstore") return toast("Key salah!");adminAbuse=true;toast("Admin Abuse AKTIF untuk semua device!");update();}
-
+async function openGift(){if(opening||gachaLimit<=0) return toast("Gacha habis");if(Date.now()-lastSpin<1200) return;lastSpin=Date.now();if(gachaLimit!==Infinity) gachaLimit--;update();gift.classList.add("shake");setTimeout(async()=>{gift.classList.remove("shake");const p=roll();popupText.className=p.n==="SECRET 🟢"?"popupText secretSpecial":p.n==="MYTHIC 🔴"?"popupText mythicSpecial":"popupText "+p.c;popupText.textContent=p.n;popup.classList.add("show");opening=false;sendDiscord(p.n,mode);await supabase.from('gacha_users').upsert({device_id:deviceId,username,password:mode,spins:gachaLimit},{onConflict:['device_id','password']});},1300);
+}
+async function toggleAdmin(){if(prompt("Password admin")!=="davzstore") return toast("Password salah!");const {data}=await supabase.from('global_status').select('*').single();const newStatus=!data.admin_abuse;await supabase.from('global_status').update({admin_abuse:newStatus, updated_at:new Date()});toast("Admin Abuse "+(newStatus?"ON":"OFF"));}
+async function startPotionAdmin(){const {data}=await supabase.from('global_status').select('*').single();if(data.potion_active) return toast("Potion Admin sudah aktif!");let countdown=10;potionCountdown.textContent="Potion Admin mulai dalam: "+countdown+" detik";let timer=setInterval(async()=>{countdown--;if(countdown<=0){clearInterval(timer);const expireTime=new Date(Date.now()+10*60*1000);await supabase.from('global_status').update({potion_active:true,potion_expire:expireTime});potionCountdown.textContent="Potion Admin aktif 10 menit!";toast("Potion Admin aktif 10 menit! Chance SECRET & MYTHIC meningkat!");fetch(WEBHOOK,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({embeds:[{title:"ADMIN EVENT TELAH DIMULAI",description:"Potion Admin aktif untuk semua user selama 10 menit!",color:0xff0000}]})});} else {potionCountdown.textContent="Potion Admin mulai dalam: "+countdown+" detik";}},1000);}
 function sendDiscord(result,modeType){const colorMap={"ZONK ⚫":0x777777,"RARE 🔵":0x03a9f4,"EPIC 🟣":0x9c27b0,"LEGENDARY 🟡":0xffeb3b,"MYTHIC 🔴":0xff5252,"SECRET 🟢":0x1de9b6};const title=(modeType==="FREE")?"🎁 FREE GACHA":"🎁 PREMIUM GACHA";fetch(WEBHOOK,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({embeds:[{title:title,description:username+" | "+result,color:colorMap[result]||0x00ff00}]})});}
-
 function selectFree(){mode="FREE";gachaLimit=3;modeSelect.style.display="none";update();}
-function selectPremium(){const key=premiumKey.value.trim();if(!key) return toast("Masukkan key");mode="PREMIUM";gachaLimit=3;modeSelect.style.display="none";update();}
+function selectPremium(){const key=premiumKey.value.trim();if(key!=="davz1231" && key!=="davznew") return toast("Key salah");mode="PREMIUM";gachaLimit=key==="davz1231"?3:Infinity;modeSelect.style.display="none";update();}
 
-function vipPopupClose(){vipPopup.classList.remove('show');}
-async function showVipPasswordManager(){if(prompt("Password admin")!=="davzstore") return toast("Password salah!");vipPopup.classList.add('show');loadVipPasswords();}
-async function loadVipPasswords(){const {data}=await supabase.from('vip_passwords').select('*');vipList.innerHTML="";data.forEach(pw=>{vipList.innerHTML+=`<div>${pw.password} | Max Spin: ${pw.spins_allowed}</div>`});}
-async function addVipPassword(){const pw=newVipPassword.value.trim();if(!pw) return toast("Masukkan password!");let spinsAllowed=adminAbuse?6:3;await supabase.from('vip_passwords').upsert({password:pw,spins_allowed:spinsAllowed});toast("Password VIP berhasil ditambahkan: "+pw);newVipPassword.value="";loadVipPasswords();}
+supabase.from('global_status').on('UPDATE',payload=>{const status=payload.new;adminAbuse=status.admin_abuse;potionActive=status.potion_active && new Date()<new Date(status.potion_expire);update();}).subscribe();
 
-async function addGiftsToAll(){if(prompt("Password admin")!=="davzstore") return toast("Password salah!");let amount = parseInt(document.getElementById('giftAmount').value) || 1; const {data,error} = await supabase.from('gacha_users').select('*'); if(error) return toast("Gagal menambahkan kado semua"); for(let user of data){let newSpin = (user.spins_free || 0) + amount; await supabase.from('gacha_users').update({spins_free:newSpin}).eq('device_id', user.device_id);}toast("Berhasil menambahkan "+amount+" spin ke semua akun!");}
+function addVipPassword(){const pass=vipPasswordInput.value.trim();if(!pass) return toast("Masukkan password");supabase.from('vip_passwords').insert({password:pass,spins_allowed:3}).then(()=>toast("Password VIP ditambahkan"));vipPasswordInput.value="";}
+function addGift(){const user=giftUsername.value.trim();if(!user) return toast("Masukkan username");if(prompt("Masukkan password untuk akses kado")!=="davzstore") return toast("Password salah");supabase.from('gacha_users').select('*').eq('username',user).then(r=>{if(r.data.length>0){supabase.from('gacha_users').update({spins_free:r.data[0].spins_free+3}).eq('username',user).then(()=>toast("Kado berhasil ditambahkan"));} else {toast("Username tidak ditemukan");}});giftUsername.value="";}
 
-function update(){limitText.textContent=(mode||"MODE")+" | SISA GACHA: "+(gachaLimit===Infinity?"∞":gachaLimit);gift.classList.toggle("disabled",gachaLimit<=0 && gachaLimit!==Infinity);adminBtn.classList.toggle("active",adminAbuse);}
+function update(){limitText.textContent=(mode||"MODE")+" | SISA GACHA: "+(gachaLimit===Infinity?"∞":gachaLimit);gift.classList.toggle("disabled",gachaLimit<=0 && gachaLimit!==Infinity);adminBtn.classList.toggle("active",adminAbuse);boostBtn.disabled=!adminAbuse;boostBtn.style.opacity=adminAbuse?1:0.4;}
 
-if(!username) popup.classList.add("show");
+if(username) popup.classList.remove("show");
 update();
 </script>
 </body>
